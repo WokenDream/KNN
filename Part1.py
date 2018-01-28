@@ -28,9 +28,16 @@ def compute_pairwise_distance(X, Z):
     return result
 
 
+def distanceFunc(X,Z):
+    return tf.reduce_sum((tf.expand_dims(X, 2) - tf.expand_dims(tf.transpose(Z), 0)) ** 2, 1)
+
 if __name__ == "__main__":
     X = tf.constant([1, 1, 1, 2, 2, 2, 3, 3, 3], shape=[3, 3])
-
     Z = tf.constant([4, 4, 4, 5, 5, 5], shape=[2, 3])
-    compute_pairwise_distance(X, Z)
+
+    with tf.Session() as sess:
+        print(sess.run(compute_pairwise_distance(X, Z)))
+        print(sess.run(distanceFunc(X,Z)))
+    # print(compute_pairwise_distance(X, Z))
+    # print(distanceFunc(X,Z))
     # print(compute_pairwise_distance(X, Z))
