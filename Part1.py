@@ -1,6 +1,12 @@
 import tensorflow as tf
 
 def compute_pairwise_distance(X, Z):
+    """
+    Computes the pairwise distance between each vector of length D in matrix X and Z
+    :param X: N1 by D matrix (i.e. N1 row vectors each of length D)
+    :param Z: N2 by D matrix (i.e. N2 row vectors each of length D)
+    :return: the pairwise distance matrix D (of shape N1 by N2) between each vectors in X and Z
+    """
     # explicitly write out the expression of pairwise distance of X and Z
     # => (x-d)^2 = x^2 - 2xd + d^2
 
@@ -18,6 +24,9 @@ def compute_pairwise_distance(X, Z):
     return result
 
 if __name__ == "__main__":
+    """
+    test if compute_pairwise_distance() works
+    """
     X = tf.constant([1, 1, 1, 2, 2, 2, 3, 3, 3], shape=[3, 3])
     Z = tf.constant([4, 4, 4, 5, 5, 5], shape=[2, 3])
 
