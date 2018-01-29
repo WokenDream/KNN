@@ -15,21 +15,7 @@ def compute_pairwise_distance(X, Z):
     # compute the matrix equivalent equation of (x-d)^2
     # since broadcasting only tile each row, we need to transpose before adding X_2 and then transpose back
     result = tf.transpose(tf.transpose(XZ + Z_2) + X_2)
-    # with tf.Session() as sess:
-    #     print(sess.run(result))
-    #     print("X_2 reduced:")
-    #     print(sess.run(X_2))
-    #     print()
-    #     print("Z_2 reduced:")
-    #     print(sess.run(Z_2))
-    #     print()
-    #     print("XZ reduced:")
-    #     print(sess.run(XZ))
     return result
-
-
-def distanceFunc(X,Z):
-    return tf.reduce_sum((tf.expand_dims(X, 2) - tf.expand_dims(tf.transpose(Z), 0)) ** 2, 1)
 
 if __name__ == "__main__":
     X = tf.constant([1, 1, 1, 2, 2, 2, 3, 3, 3], shape=[3, 3])
@@ -37,7 +23,3 @@ if __name__ == "__main__":
 
     with tf.Session() as sess:
         print(sess.run(compute_pairwise_distance(X, Z)))
-        print(sess.run(distanceFunc(X,Z)))
-    # print(compute_pairwise_distance(X, Z))
-    # print(distanceFunc(X,Z))
-    # print(compute_pairwise_distance(X, Z))
