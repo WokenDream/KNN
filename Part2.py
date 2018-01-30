@@ -3,55 +3,39 @@ import numpy as np
 import Part1 as p1
 import matplotlib.pyplot as plt
 
-def compute_R(D, k=2):
+def compute_R(D, k=1):
     """
     Compute responsibility matrix for each test point.
     Row i in D is the pairwise distance between test point i and each training point
     :param D: pairwise distance matrix
-    :param k: top k
+    :param k: number of closest neighbours to consider
     :return: responsibility matrix for each test point
     """
     vals, inds = tf.nn.top_k(-D, k=k)
 
-    # the indices returned by top_k is not usable
+    # the indices returned by top_k is not directly usable
     # we need to make it into a usable boolean tensor that has encodes row number
     inds = tf.expand_dims(inds, axis=2)  # reshape indices to 3D to make each index stand alone
     # a 3D row vector representing column indices
     test_point_indices = tf.reshape(tf.range(tf.shape(D)[1]), shape=[1, 1, -1])
 
-    # broadcast to 3D boolean tensor:
+    # broadcast both (to match dimensions) to 3D boolean tensor:
     # 1st D: true/false (top_k or not), 2nd D: row vector of len(# of train) 3rdD: num of test * k
     top_k_boolean = tf.equal(inds, test_point_indices)
 
-    # convert true to 1, and  undo the broadcasting
-    R = tf.reduce_sum(tf.cast(top_k_boolean, tf.int64), axis=1)
+    # convert true to 1, and  undo the broadcasting to make it 2D
+    R = tf.reduce_sum(tf.cast(top_k_boolean, tf.int32), axis=1)
     return R/k
 
-# buggy versions that don't work with integer matrices at all times
-# def compute_R(D, k=2):
-#     vals = tf.nn.top_k(-D, k=k).values * -1
-#     min_kmax = tf.reduce_min(vals, axis=1)
-#     R = tf.transpose(tf.transpose(D) - min_kmax).eval()
-#     R[R < 0] = 0
-#     R[R > 0] = 1
-#
-#     return R/k
-
-# def compute_R(D, k=2):
-#     vals, inds = tf.nn.top_k(-D, k=k)
-#     kth = tf.reduce_min(vals)
-#     topk = tf.greater_equal(D, kth).eval()
-#     R = tf.zeros(tf.shape(D)).eval()
-#     R[topk] = 1
-#     return R/k
-
-def pred_kNN(True_Y, R):
+def pred_KNN(True_Y, D, k=1):
     """
-    Compute regression by True_Y * R^T
-    :param True_Y: row matrix represent true labels of Y
-    :param R: column matrix represent responsibility
-    :return: KNN prediction
+
+    :param True_Y: a 1 by N matrix where each entry represents true labels Y of Xi
+    :param D: pairwise distance matrix of shape [number of test point, number of training point]
+    :param k: number of closest neighbours to consider
+    :return: 1 by N matrix representing predicted values for all test point
     """
+    R = compute_R(D, k)
     return tf.matmul(True_Y, R, transpose_b=True)
     # return tf.transpose(tf.matmul(R, True_Y)) # (A^T)*(B^T) = (B*A)^T
 
@@ -89,13 +73,10 @@ if __name__ == "__main__":
     with tf.Session() as sess:
         for k in [1, 3, 5, 50]:
             print("k: ", k)
-            Train_R = compute_R(Train_D, k=k)
-            Vali_R = compute_R(Vali_D, k=k)
-            Test_R = compute_R(Test_D, k=k)
 
-            Train_Pred = pred_kNN(trainTarget_row_vec, Train_R)
-            Vali_Pred = pred_kNN(trainTarget_row_vec, Vali_R)
-            Test_Pred = pred_kNN(trainTarget_row_vec, Test_R)
+            Train_Pred = pred_KNN(trainTarget_row_vec, Train_D, k=k)
+            Vali_Pred = pred_KNN(trainTarget_row_vec, Vali_D, k=k)
+            Test_Pred = pred_KNN(trainTarget_row_vec, Test_D, k=k)
             train_error = compute_MSE(trainTarget_row_vec, Train_Pred).eval()
             vali_error = compute_MSE(validTarget_row_vec, Vali_Pred).eval()
             test_error = compute_MSE(testTarget_row_vec, Test_Pred).eval()
@@ -119,8 +100,8 @@ if __name__ == "__main__":
         # i = 1
         for k in [1, 3, 5, 50]:
             print("k: ", k)
-            Test_R = compute_R(Test_D, k=k)
-            Test_Pred = pred_kNN(trainTarget_row_vec, Test_R)
+
+            Test_Pred = pred_KNN(trainTarget_row_vec, Test_D, k=k)
             test_error = compute_MSE(testTarget_row_vec, Test_Pred).eval()
             print("test error: ", test_error)
 
