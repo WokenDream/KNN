@@ -27,6 +27,7 @@ def compute_R(D, k=1):
     R = tf.reduce_sum(tf.cast(top_k_boolean, tf.int32), axis=1)
     return R/k
 
+
 def pred_KNN(True_Y, D, k=1):
     """
 
@@ -39,6 +40,7 @@ def pred_KNN(True_Y, D, k=1):
     return tf.matmul(True_Y, R, transpose_b=True)
     # return tf.transpose(tf.matmul(R, True_Y)) # (A^T)*(B^T) = (B*A)^T
 
+
 def compute_MSE(True_Y, Pred_Y):
     """
     Compute mean squrared error between [1 by N] matrices Y_True and Y_pred
@@ -48,6 +50,7 @@ def compute_MSE(True_Y, Pred_Y):
     """
     error = tf.reduce_sum(tf.squared_difference(True_Y, Pred_Y))
     return error / tf.cast(2 * tf.shape(Pred_Y)[1], dtype=tf.float64)
+
 
 if __name__ == "__main__":
 
@@ -61,7 +64,7 @@ if __name__ == "__main__":
     validData, validTarget = Data[randIdx[80:90]], Target[randIdx[80:90]]
     testData, testTarget = Data[randIdx[90:100]], Target[randIdx[90:100]]
 
-    # reshape for ease of use
+    # save repeated computation
     trainTarget_row_vec = np.reshape(trainTarget, [1, -1])
     validTarget_row_vec = np.reshape(validTarget, [1, -1])
     testTarget_row_vec = np.reshape(testTarget, [1, -1])

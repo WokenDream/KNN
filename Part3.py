@@ -24,6 +24,18 @@ def data_segmentation(data_path, target_path, task):
     return trainData, validData, testData, trainTarget, validTarget, testTarget
 
 
+def compute_accuracy(True_Y, Pred_Y):
+    """
+    Compute the similarity between true labels and predicted labels
+    :param True_Y: 1 by N matrix of true labels
+    :param Pred_Y: 1 by N matrix of predicted labels
+    :return: similarity as a ratio between True_Y and Pred_Y
+    """
+    difference = tf.count_nonzero(True_Y - Pred_Y, dtype=tf.int32)
+    num = tf.shape(Pred_Y)[1]
+    return (num - difference) / num
+
+
 def predict_KNN(trainTarget, D, k):
     """
     Predict labels for each test point in D.
@@ -40,17 +52,39 @@ def predict_KNN(trainTarget, D, k):
         unique_labels, _, counts = tf.unique_with_counts(top_k_labels)
         label_index = tf.argmax(counts)
         predictions[i] = unique_labels[label_index].eval()
-    return predictions
+    return tf.reshape(predictions, [1, -1])
+
 
 def predict_face_kNN():
     trainData, validData, testData, trainTarget, validTarget, testTarget = data_segmentation('./data.npy',
                                                                                              './target.npy', 0)
-    Train_D = p1.compute_pairwise_distance(trainData, trainData)
+    # compute pairwise distance
     Vali_D = p1.compute_pairwise_distance(validData, trainData)
     Test_D = p1.compute_pairwise_distance(testData, trainData)
-    # print(tf.shape(tf.convert_to_tensor(trainTarget)).eval())
-    print(predict_KNN(trainTarget, Vali_D, k=5))
-    # predict_KNN(trainTarget, Test_D, k=5)
+
+    # save repeated computation
+    validTarget_row_vec = tf.cast(tf.reshape(validTarget, [1, -1]), tf.int32)
+    testTarget_row_vec = tf.cast(tf.reshape(testTarget, [1, -1]), tf.int32)
+
+    best_accuracy = 0.0
+    best_k = 1
+
+    with tf.Session() as sess:
+        for k in [1, 5, 10, 25, 50, 100, 200]:
+            print("k: ", k)
+            Vali_Pred = predict_KNN(trainTarget, Vali_D, k=k)
+            accuracy = compute_accuracy(validTarget_row_vec, Vali_Pred).eval()
+            # accuracy = 1 - p2.compute_MSE(validTarget_row_vec, Vali_Pred).eval()
+            print("accuracy", accuracy)
+            if accuracy > best_accuracy:
+                best_accuracy = accuracy
+                best_k = k
+        print("best k: ", best_k, " best accuracy: ", best_accuracy)
+
+        Test_Pred = predict_KNN(trainTarget, Test_D, k=best_k)
+        accuracy = compute_accuracy(testTarget_row_vec, Test_Pred).eval()
+        print("test accuracy with best k = ", best_k, " is: ", accuracy)
+
 
 def predict_gender_kNN():
     trainData, validData, testData, trainTarget, validTarget, testTarget = data_segmentation('./data.npy',
@@ -59,6 +93,7 @@ def predict_gender_kNN():
     Vali_D = p1.compute_pairwise_distance(validData, trainData)
     Test_D = p1.compute_pairwise_distance(testData, trainData)
     pass
+
 
 if __name__ == "__main__":
     with tf.Session() as sess:
