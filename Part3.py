@@ -72,19 +72,19 @@ def predict_face_KNN():
     best_k = 1
 
     with tf.Session() as sess:
-        for k in [1, 5, 10, 25, 50, 100, 200]:
-            print("k: ", k)
-            Vali_Pred = predict_KNN(trainTarget, Vali_D, k=k)
-            accuracy = compute_accuracy(validTarget_row_vec, Vali_Pred).eval()
-            print("accuracy", accuracy)
-            if accuracy > best_accuracy:
-                best_accuracy = accuracy
-                best_k = k
-        print("best k: ", best_k, " best accuracy: ", best_accuracy)
-
-        Test_Pred = predict_KNN(trainTarget, Test_D, k=best_k)
-        accuracy = compute_accuracy(testTarget_row_vec, Test_Pred).eval()
-        print("test accuracy with best k = ", best_k, " is: ", accuracy)
+        # for k in [1, 5, 10, 25, 50, 100, 200]:
+        #     print("k: ", k)
+        #     Vali_Pred = predict_KNN(trainTarget, Vali_D, k=k)
+        #     accuracy = compute_accuracy(validTarget_row_vec, Vali_Pred).eval()
+        #     print("accuracy", accuracy)
+        #     if accuracy > best_accuracy:
+        #         best_accuracy = accuracy
+        #         best_k = k
+        # print("best k: ", best_k, " best accuracy: ", best_accuracy)
+        #
+        # Test_Pred = predict_KNN(trainTarget, Test_D, k=best_k)
+        # accuracy = compute_accuracy(testTarget_row_vec, Test_Pred).eval()
+        # print("test accuracy with best k = ", best_k, " is: ", accuracy)
 
         get_label = get_name
         display_failure(trainTarget, validTarget, trainData, validData, Vali_D, get_label, sample_num=1)
@@ -106,19 +106,19 @@ def predict_gender_KNN():
     best_k = 1
 
     with tf.Session() as sess:
-        for k in [1, 5, 10, 25, 50, 100, 200]:
-            print("k: ", k)
-            Vali_Pred = predict_KNN(trainTarget, Vali_D, k=k)
-            accuracy = compute_accuracy(validTarget_row_vec, Vali_Pred).eval()
-            print("accuracy", accuracy)
-            if accuracy > best_accuracy:
-                best_accuracy = accuracy
-                best_k = k
-        print("best k: ", best_k, " best accuracy: ", best_accuracy)
-
-        Test_Pred = predict_KNN(trainTarget, Test_D, k=best_k)
-        accuracy = compute_accuracy(testTarget_row_vec, Test_Pred).eval()
-        print("test accuracy with best k = ", best_k, " is: ", accuracy)
+        # for k in [1, 5, 10, 25, 50, 100, 200]:
+        #     print("k: ", k)
+        #     Vali_Pred = predict_KNN(trainTarget, Vali_D, k=k)
+        #     accuracy = compute_accuracy(validTarget_row_vec, Vali_Pred).eval()
+        #     print("accuracy", accuracy)
+        #     if accuracy > best_accuracy:
+        #         best_accuracy = accuracy
+        #         best_k = k
+        # print("best k: ", best_k, " best accuracy: ", best_accuracy)
+        #
+        # Test_Pred = predict_KNN(trainTarget, Test_D, k=best_k)
+        # accuracy = compute_accuracy(testTarget_row_vec, Test_Pred).eval()
+        # print("test accuracy with best k = ", best_k, " is: ", accuracy)
 
         get_label = get_gender
         display_failure(trainTarget, validTarget, trainData, validData, Vali_D, get_label, sample_num=2)
