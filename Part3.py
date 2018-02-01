@@ -72,22 +72,22 @@ def predict_face_KNN():
     best_k = 1
 
     with tf.Session() as sess:
-        # for k in [1, 5, 10, 25, 50, 100, 200]:
-        #     print("k: ", k)
-        #     Vali_Pred = predict_KNN(trainTarget, Vali_D, k=k)
-        #     accuracy = compute_accuracy(validTarget_row_vec, Vali_Pred).eval()
-        #     # accuracy = 1 - p2.compute_MSE(validTarget_row_vec, Vali_Pred).eval()
-        #     print("accuracy", accuracy)
-        #     if accuracy > best_accuracy:
-        #         best_accuracy = accuracy
-        #         best_k = k
-        # print("best k: ", best_k, " best accuracy: ", best_accuracy)
-        #
-        # Test_Pred = predict_KNN(trainTarget, Test_D, k=best_k)
-        # accuracy = compute_accuracy(testTarget_row_vec, Test_Pred).eval()
-        # print("test accuracy with best k = ", best_k, " is: ", accuracy)
+        for k in [1, 5, 10, 25, 50, 100, 200]:
+            print("k: ", k)
+            Vali_Pred = predict_KNN(trainTarget, Vali_D, k=k)
+            accuracy = compute_accuracy(validTarget_row_vec, Vali_Pred).eval()
+            print("accuracy", accuracy)
+            if accuracy > best_accuracy:
+                best_accuracy = accuracy
+                best_k = k
+        print("best k: ", best_k, " best accuracy: ", best_accuracy)
 
-        display_face_failure_10(trainTarget, validData, validTarget, trainData, Vali_D)
+        Test_Pred = predict_KNN(trainTarget, Test_D, k=best_k)
+        accuracy = compute_accuracy(testTarget_row_vec, Test_Pred).eval()
+        print("test accuracy with best k = ", best_k, " is: ", accuracy)
+
+        get_label = get_name
+        display_failure(trainTarget, validTarget, trainData, validData, Vali_D, get_label, sample_num=1)
 
 
 
@@ -95,7 +95,6 @@ def predict_gender_KNN():
     trainData, validData, testData, trainTarget, validTarget, testTarget = data_segmentation('./data.npy',
                                                                                              './target.npy', 1)
     # compute pairwise distance
-    # Train_D = p1.compute_pairwise_distance(trainData, trainData)
     Vali_D = p1.compute_pairwise_distance(validData, trainData)
     Test_D = p1.compute_pairwise_distance(testData, trainData)
 
@@ -121,25 +120,41 @@ def predict_gender_KNN():
         accuracy = compute_accuracy(testTarget_row_vec, Test_Pred).eval()
         print("test accuracy with best k = ", best_k, " is: ", accuracy)
 
-        display_gender_failure_10(trainTarget, validData, validTarget, trainData, Vali_D)
+        get_label = get_gender
+        display_failure(trainTarget, validTarget, trainData, validData, Vali_D, get_label, sample_num=2)
 
 
-def display_face_failure_10(trainTarget, validData, validTarget, trainData, Vali_D, k=10):
+def display_failure(trainTarget, validTarget, trainData, validData, Vali_D, get_label, sample_num=0, k=10):
+    """
+    Display the failure case:
+     1. save the image and label of a validation point.
+     2. print the predicted label
+     2. save all the top k neighbours images and their labels.
+    :param trainTarget:  a vector of true labels for each training point
+    :param validTarget: a vector of true labels for each validation point
+    :param trainData: matrix represent the greyscale pixel of each training point
+    :param validData:  matrix represent the greyscale pixel of each validation point
+    :param Vali_D: pairwise distance matrix between validation and training points
+    :param get_label: a function for decoding integers to labels
+    :param sample_num: the index of the failure to examine
+    :param k: how many neigbours to consider
+    :return: None
+    """
     Vali_Pred = predict_KNN(trainTarget, Vali_D, k=k)
     validTarget_row_vec = tf.cast(tf.reshape(validTarget, [1, -1]), tf.int32)
     diff = (validTarget_row_vec - Vali_Pred).eval()  # non-zero entries mean misclassified
     miss_inds = np.nonzero(np.reshape(diff, -1))  # 1 by N matrix represent indices of miss
-    sample_ind = miss_inds[0][1]  # take the 2nd miss to comment on
+    sample_ind = miss_inds[0][sample_num]  # take the 2nd miss to comment on
 
     # display the image of true label
-    true_name = get_name(validTarget[sample_ind])
+    true_label = get_label(validTarget[sample_ind])
     true_image = validData[sample_ind]
     plt.imshow(np.reshape(true_image, [32, 32]))
-    plt.title(true_name)
-    plt.savefig(true_name + " true")
+    plt.title(true_label)
+    plt.savefig(true_label + " true")
 
-    # print the name of the prediction
-    print("prediction: ", get_name(Vali_Pred[0][sample_ind].eval()))
+    # print the label of the prediction
+    print("prediction: ", get_label(Vali_Pred[0][sample_ind].eval()))
 
     # display the k neighbours
     inds = tf.nn.top_k((-Vali_D)[sample_ind], k=k).indices.eval()
@@ -147,40 +162,10 @@ def display_face_failure_10(trainTarget, validData, validTarget, trainData, Vali
     top_k_images = trainData[inds]
     i = 0
     for label, image in zip(top_k_labels, top_k_images):
-        name = get_name(label)
-        plt.imshow(np.reshape(image, [32,32]))
-        plt.title(name)
-        plt.savefig(name + str(i))
-        i += 1
-
-
-def display_gender_failure_10(trainTarget, validData, validTarget, trainData, Vali_D, k=10):
-    Vali_Pred = predict_KNN(trainTarget, Vali_D, k=k)
-    validTarget_row_vec = tf.cast(tf.reshape(validTarget, [1, -1]), tf.int32)
-    diff = (validTarget_row_vec - Vali_Pred).eval()  # non-zero entries mean misclassified
-    miss_inds = np.nonzero(np.reshape(diff, -1))  # 1 by N matrix represent indices of miss
-    sample_ind = miss_inds[0][2]  # take the 2nd miss to comment on
-
-    # display the image of true label
-    true_gender = get_gender(validTarget[sample_ind])
-    true_image = validData[sample_ind]
-    plt.imshow(np.reshape(true_image, [32, 32]))
-    plt.title(true_gender)
-    plt.savefig(true_gender + " true")
-
-    # print the gender of the prediction
-    print("prediction: ", get_gender(Vali_Pred[0][sample_ind].eval()))
-
-    # display the k neighbours
-    inds = tf.nn.top_k((-Vali_D)[sample_ind], k=k).indices.eval()
-    top_k_labels = trainTarget[inds]
-    top_k_images = trainData[inds]
-    i = 0
-    for label, image in zip(top_k_labels, top_k_images):
-        gender = get_gender(label)
+        neighbour_label = get_label(label)
         plt.imshow(np.reshape(image, [32, 32]))
-        plt.title(gender)
-        plt.savefig(gender + str(i))
+        plt.title(neighbour_label)
+        plt.savefig(neighbour_label + str(i))
         i += 1
 
 
