@@ -1,5 +1,6 @@
 import tensorflow as tf
 
+
 def compute_pairwise_distance(X, Z):
     """
     Computes the pairwise distance between each vector of length D in matrix X and Z
@@ -22,6 +23,7 @@ def compute_pairwise_distance(X, Z):
     # since broadcasting only tile each row, we need to transpose before adding X_2 and then transpose back
     result = tf.transpose(tf.transpose(XZ + Z_2) + X_2)
     return result
+
 
 if __name__ == "__main__":
     """

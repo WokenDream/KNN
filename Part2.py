@@ -3,6 +3,7 @@ import numpy as np
 import Part1 as p1
 import matplotlib.pyplot as plt
 
+
 def compute_R(D, k=1):
     """
     Compute responsibility matrix for each test point.
