@@ -98,10 +98,9 @@ if __name__ == "__main__":
 
     # reshape for ease of use
     testTarget_row_vec = np.reshape(testTarget, [1, -1])
-    print("1000-test set shape: ", testTarget_row_vec.shape)
+    # print("1000-test set shape: ", testTarget_row_vec.shape)
     Test_D = p1.compute_pairwise_distance(testData, trainData)
     with tf.Session() as sess:
-        # i = 1
         for k in [1, 3, 5, 50]:
             print("k: ", k)
 
@@ -109,10 +108,7 @@ if __name__ == "__main__":
             test_error = compute_MSE(testTarget_row_vec, Test_Pred).eval()
             print("test error: ", test_error)
 
-            # plt.subplot(4, 1, i)
             plt.scatter(testData, tf.transpose(Test_Pred).eval(), s=1)
             plt.scatter(testData, testTarget, s=1)
             plt.title("kNN Regression on 1000 points, k = " + str(k))
             plt.show()
-            # i += 1
-        # plt.show()

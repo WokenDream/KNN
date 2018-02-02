@@ -58,7 +58,7 @@ def predict_KNN(trainTarget, D, k):
 
 def predict_face_KNN():
     """
-    Section 3.2 - run face recognition
+    Run face recognition
     :return: None
     """
     predict_labels(0, get_name, "face classification", failure_index=1)
@@ -67,7 +67,7 @@ def predict_face_KNN():
 
 def predict_gender_KNN():
     """
-    Section 3.3 - run gender recognition
+    Run gender recognition
     :return: None
     """
     predict_labels(1, get_gender, "gender classification", failure_index=2)
@@ -93,27 +93,27 @@ def predict_labels(task, get_label, task_name, failure_index=0):
     testTarget_row_vec = tf.cast(tf.reshape(testTarget, [1, -1]), tf.int32)
 
     best_accuracy = 0.0
-    best_k = 1
+    best_ks = []
 
+    print()
     print("result for ", task_name)
 
-    with tf.Session() as sess:
-        for k in [1, 5, 10, 25, 50, 100, 200]:
-            print("k: ", k)
-            Vali_Pred = predict_KNN(trainTarget, Vali_D, k=k)
-            accuracy = compute_accuracy(validTarget_row_vec, Vali_Pred).eval()
-            print("accuracy", accuracy)
-            if accuracy > best_accuracy:
-                best_accuracy = accuracy
-                best_k = k
-        print("best k: ", best_k, " best accuracy: ", best_accuracy)
-
+    for k in [1, 5, 10, 25, 50, 100, 200]:
+        print("k: ", k)
+        Vali_Pred = predict_KNN(trainTarget, Vali_D, k=k)
+        accuracy = compute_accuracy(validTarget_row_vec, Vali_Pred).eval()
+        print("accuracy", accuracy)
+        if accuracy >= best_accuracy:
+            best_accuracy = accuracy
+            best_ks.append(k)
+    print("best ks: ", best_ks, " best accuracy: ", best_accuracy)
+    print()
+    for best_k in best_ks:
         Test_Pred = predict_KNN(trainTarget, Test_D, k=best_k)
         accuracy = compute_accuracy(testTarget_row_vec, Test_Pred).eval()
         print("test accuracy with best k = ", best_k, " is: ", accuracy)
-
-        display_failure(trainTarget, validTarget, trainData, validData, Vali_D, get_label, failure_index=failure_index)
-
+    print()
+    display_failure(trainTarget, validTarget, trainData, validData, Vali_D, get_label, failure_index=failure_index)
 
 
 def display_failure(trainTarget, validTarget, trainData, validData, Vali_D, get_label, failure_index=0, k=10):
@@ -164,11 +164,21 @@ def display_failure(trainTarget, validTarget, trainData, validData, Vali_D, get_
 
 
 def get_name(label):
+    """
+    Decode integer to name of the label.
+    :param label: integer enconding
+    :return: name of the label
+    """
     names = ['Lorraine Bracco', 'Gerard Butler', 'Peri Gilpin', 'Angie Harmon', 'Daniel Radcliffe', 'Michael Vartan']
     return names[label]
 
 
 def get_gender(label):
+    """
+    Decode integer to gender of the label.
+    :param label: integer encoding
+    :return: gender of the label
+    """
     return ['Male', 'Female'][label]
 
 

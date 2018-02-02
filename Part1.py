@@ -20,7 +20,8 @@ def compute_pairwise_distance(X, Z):
     XZ = tf.scalar_mul(-2, XZ)
 
     # compute the matrix equivalent equation of (x-d)^2
-    # since broadcasting only tile each row, we need to transpose before adding X_2 and then transpose back
+    # since broadcasting only tile each row,
+    # we need to transpose before adding X_2 and then transpose back
     result = tf.transpose(tf.transpose(XZ + Z_2) + X_2)
     return result
 
